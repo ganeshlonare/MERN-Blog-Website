@@ -1,6 +1,6 @@
 import {Link, Outlet} from 'react-router-dom';
 import logo from '../imgs/logo.png';
-import { FaSearch , FaFile } from "react-icons/fa";
+import { FaSearch , FaFile , FaEbay } from "react-icons/fa";
 import { useState } from 'react';
 
 export default function Navbar() {

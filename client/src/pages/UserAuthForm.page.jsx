@@ -2,9 +2,11 @@ import React from 'react'
 import InputBox from '../components/Input.component'
 import { FaGoogle } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import AnimationWrapper from '../common/Page-animation'
 
 export default function UserAuthForm({type}) {
   return (
+    <AnimationWrapper keyValue={type}>
     <section className='h-cover flex items-center justify-center'>
         <form className='w-[80%] max-w-[400px]'>
 
@@ -42,7 +44,7 @@ export default function UserAuthForm({type}) {
                 <hr className='w-1/2' />
               </div>
               
-              <button className='center btn-dark bg-google flex items-center gap-2'>
+              <button type='button' className='center btn-dark bg-google flex items-center gap-2'>
                 <FaGoogle />
                 continue with google
               </button>
@@ -66,5 +68,6 @@ export default function UserAuthForm({type}) {
 
         </form>
     </section>
+    </AnimationWrapper>
   )
 }
