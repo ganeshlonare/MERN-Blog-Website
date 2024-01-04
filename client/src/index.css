@@ -47,7 +47,7 @@
     }
 
     .btn-dark{
-        @apply whitespace-nowrap bg-black text-white rounded-full py-3 px-6 text-xl capitalize hover:bg-opacity-80;
+        @apply whitespace-nowrap bg-black text-white rounded-full py-3 px-6 text-xl capitalize hover:bg-opacity-90;
     }
 
     .btn-light{
@@ -123,4 +123,9 @@
 .cdx-settings-button[data-tune='withBackground'],
 .cdx-settings-button[data-tune='stretched'] {
   display: none;
+}
+
+
+.bg-google{
+    background-color: #b80d0d;
 }
