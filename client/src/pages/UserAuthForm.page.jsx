@@ -65,7 +65,6 @@ export default function UserAuthForm({type}) {
                   </Link>
                   </p>
               }
-
         </form>
     </section>
     </AnimationWrapper>
