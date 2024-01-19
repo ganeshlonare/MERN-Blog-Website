@@ -62,3 +62,20 @@ export const signUp=async (req,res)=>{
        return res.status(404).json(error.message);
     }
 }
+
+
+export const signIn=async (req,res,next)=>{
+    const {email,password}=req.body;
+    try {        
+    const validUser=await User.findOne({"personal_info.email" : email})
+    if(!validUser) return res.status(404).json({error:"User not found"});
+
+    const validPassword=bcryptjs.compareSync(password,validUser.personal_info.password);
+    if(!validPassword) return res.status(404).json({error:"Invalid password"});
+
+    res.status(200).json(formDataToSend(validUser));
+
+    } catch (error) {
+        return res.status(404).json(error)
+    }
+}
