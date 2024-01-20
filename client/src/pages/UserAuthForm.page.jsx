@@ -1,36 +1,35 @@
-import React, { useEffect, useRef } from 'react'
 import InputBox from '../components/Input.component'
 import { FaGoogle } from 'react-icons/fa'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import AnimationWrapper from '../common/Page-animation'
 import { Toaster ,toast } from 'react-hot-toast'
-
+import axios from 'axios'
+import {storeInSession} from '../common/Session'
+import { useContext } from 'react'
+import { UserContext } from '../App'
 
 export default function UserAuthForm({type}) {
 
   let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
   let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
+  let {userAuth:{access_token} , setUserAuth} =useContext(UserContext)
+
   const userAuthThroughServer=async (serverRoute,formData)=>{
-    try {
-    const res=await fetch(`/api/auth/${serverRoute}`,
-    {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-      },
-      body:JSON.stringify(formData),
-    });
-    const data=await res.json()
-    if(data.success===false){
-      return toast.error(data.error);
-    }
-
-    toast.success("User created successfully")
-
-  }catch(error){
-    console.log(error)
-  }
+    axios.post(`/api/auth/${serverRoute}`,formData)
+    .then(({data})=>{
+      storeInSession("user",JSON.stringify(data))
+      setUserAuth(data)
+      {
+        serverRoute=='signin' 
+        ? toast.success("logged in successfully") 
+        : toast.success("user created successfully")
+      }
+    })
+    .catch(({response})=>{
+      toast.error(response.data.error)
+    })
+    
   }
 
    const handleSubmit=async (e)=>{
@@ -70,6 +69,9 @@ export default function UserAuthForm({type}) {
   }
 
   return (
+    access_token ?
+    <Navigate to='/'/>
+    :
     <AnimationWrapper keyValue={type}>
     <section className='h-cover flex items-center justify-center'>
       <Toaster />
