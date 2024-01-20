@@ -1,14 +1,79 @@
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import InputBox from '../components/Input.component'
 import { FaGoogle } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import AnimationWrapper from '../common/Page-animation'
+import { Toaster ,toast } from 'react-hot-toast'
+
 
 export default function UserAuthForm({type}) {
+
+  let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
+  let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
+
+  const userAuthThroughServer=async (serverRoute,formData)=>{
+    try {
+    const res=await fetch(`/api/auth/${serverRoute}`,
+    {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+      },
+      body:JSON.stringify(formData),
+    });
+    const data=await res.json()
+    if(data.success===false){
+      return toast.error(data.error);
+    }
+
+    toast.success("User created successfully")
+
+  }catch(error){
+    console.log(error)
+  }
+  }
+
+   const handleSubmit=async (e)=>{
+    e.preventDefault();
+    let serverRoute=type== "sign-in" ?"signin":"signup";
+    let form=new FormData(formElement);
+    let formData={};
+
+    for(let [key , value] of form.entries()){
+      formData[key]=value;
+    }
+
+    let {fullname , email , password}=formData;
+
+  if(fullname){
+
+    if(fullname.length<3) {
+      return toast.error('fullname must be more than 3 characters')
+    }
+
+  }
+
+  if(!email.length) {
+      return toast.error('Enter your email')
+  }
+
+  if(!emailRegex.test(email)) {
+      return toast.error('Email is invalid')
+  }
+
+  if(!passwordRegex.test(password)){
+      return toast.error('Password should be 6 to 20 characters long with a Numeric , 1 lowercase and 1 uppercase letter')
+  }
+
+  userAuthThroughServer(serverRoute , formData);
+
+  }
+
   return (
     <AnimationWrapper keyValue={type}>
     <section className='h-cover flex items-center justify-center'>
-        <form className='w-[80%] max-w-[400px]'>
+      <Toaster />
+        <form id='formElement' className='w-[80%] max-w-[400px]'>
 
             <h1 className='text-4xl capitalize font-gelasio text-center mb-24'>
                 {type=="sign-in" ? "welcome Back" : "Join us Today"}
@@ -26,7 +91,7 @@ export default function UserAuthForm({type}) {
               <InputBox
                 type="mail" 
                 placeholder="Enter your mail" 
-                name='mail' 
+                name='email' 
               />
               <InputBox
                 type="password" 
@@ -34,7 +99,7 @@ export default function UserAuthForm({type}) {
                 name='password' 
               />
 
-              <button className='center btn-dark mt-14'>
+              <button onClick={handleSubmit} className='center btn-dark mt-14'>
                 {type.replace("-" , " ")}
               </button>
 

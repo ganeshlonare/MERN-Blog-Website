@@ -21,6 +21,7 @@ export const signUp=async (req,res)=>{
 
     if(fullname.length<3) {
         return res.status(403).json({
+            success:false,
             error:"fullname must be more than 3 characters"
         })
     }
@@ -45,8 +46,6 @@ export const signUp=async (req,res)=>{
 
     let username=email.split("@")[0];
 
-    
-
     const newUser=new User({
         personal_info:{fullname , email , password:hashPassword,username}
     })
@@ -56,6 +55,7 @@ export const signUp=async (req,res)=>{
     } catch (error) {
         if(error.code == 11000) {
             return res.status(500).json({
+                success:false,
                 error:"Email is already exists!"
             })
         }
@@ -68,10 +68,18 @@ export const signIn=async (req,res,next)=>{
     const {email,password}=req.body;
     try {        
     const validUser=await User.findOne({"personal_info.email" : email})
-    if(!validUser) return res.status(404).json({error:"User not found"});
+    if(!validUser) return res.status(404).json(
+        {
+            success:false,
+            error:"User not found"
+        }
+        );
 
     const validPassword=bcryptjs.compareSync(password,validUser.personal_info.password);
-    if(!validPassword) return res.status(404).json({error:"Invalid password"});
+    if(!validPassword) return res.status(404).json({
+        success:false,
+        error:"Invalid password"
+    });
 
     res.status(200).json(formDataToSend(validUser));
 
