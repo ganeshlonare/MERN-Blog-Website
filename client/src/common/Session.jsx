@@ -7,7 +7,7 @@ const lookInSession=(key)=>{
 }
 
 const removeFromSession=(key)=>{
-    return sessionStorage.removeItem(key,value);
+    return sessionStorage.removeItem(key);
 }
 
 export {storeInSession , lookInSession , removeFromSession };

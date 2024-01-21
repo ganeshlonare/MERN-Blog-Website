@@ -1,10 +1,23 @@
 import {Link, Outlet} from 'react-router-dom';
 import logo from '../imgs/logo.png';
-import { FaSearch , FaFile , FaEbay } from "react-icons/fa";
-import { useState } from 'react';
+import { FaSearch , FaFile, FaRegBell } from "react-icons/fa";
+import { useContext, useState } from 'react';
+import {UserContext} from '../App'
+import UserNavigationPanel from './User-navigation.component';
 
 export default function Navbar() {
+
   const [searchBoxVisibility , setSearchBoxVisibility] =useState(false);
+
+  const [userNavPanel , setUserNavPanel]= useState(false)
+
+  const {ustateth , userAuth : {access_token , profile_img}}=useContext(UserContext)
+
+  const handleBlur=()=>{
+    setTimeout(()=>{
+      setUserNavPanel(false);
+    },100)
+  }
   
   return (
    <>
@@ -38,7 +51,37 @@ export default function Navbar() {
   <FaFile />
   <p>Write</p>
   </Link>
+  
+  {
+    access_token 
+    ? 
+    <>
+    <Link to='/dashboard/notification'>
+      <button className='w-12 h-12 bg-grey rounded-full hover:bg-black/10 flex justify-center items-center'>
+        <FaRegBell className='text-2xl mt-1 '/>
+      </button>
+    </Link>
 
+    <div
+    onClick={()=>setUserNavPanel((currentVal)=>!currentVal)}
+    onBlur={handleBlur}
+    className="relative">
+      <button 
+      className='w-12 h-12 mt-1'>
+        <img
+        className='w-full h-full object-cover rounded-full'
+         src={profile_img} alt="Profile image" />
+      </button>
+
+      {
+        userNavPanel ? <UserNavigationPanel /> : ""
+      }
+    </div>
+    </>
+
+    :
+
+    <>
   <Link to='/sign-in' className='btn-dark py-2'>
    Sign In
   </Link>
@@ -46,6 +89,8 @@ export default function Navbar() {
   <Link to='/sign-up' className='btn-light py-2 hidden md:inline'>
    Sign Up
   </Link>
+    </>
+  }
   
 </div>
 </nav>
