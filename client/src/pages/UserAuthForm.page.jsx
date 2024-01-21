@@ -7,6 +7,8 @@ import axios from 'axios'
 import {storeInSession} from '../common/Session'
 import { useContext } from 'react'
 import { UserContext } from '../App'
+import {GoogleAuthProvider , getAuth , signInWithPopup} from 'firebase/auth'
+import {app} from '../common/Firebase'
 
 export default function UserAuthForm({type}) {
 
@@ -68,6 +70,28 @@ export default function UserAuthForm({type}) {
 
   }
 
+  const handleGoogleClick=async ()=>{
+    try {
+      const provider=new GoogleAuthProvider();
+      const auth=getAuth(app);
+      const result = await signInWithPopup(auth , provider)
+
+      let serverRoute='google'
+
+      
+
+      let formData={
+        fullname:result.user.displayName,
+        email:result.user.email
+      }
+
+      userAuthThroughServer(serverRoute , formData);
+
+    } catch (error) {
+      toast.error("could not sign in with google")
+    }
+  }
+
   return (
     access_token ?
     <Navigate to='/'/>
@@ -111,7 +135,10 @@ export default function UserAuthForm({type}) {
                 <hr className='w-1/2' />
               </div>
               
-              <button type='button' className='center btn-dark bg-google flex items-center gap-2'>
+              <button 
+              onClick={handleGoogleClick}
+              type='button' 
+              className='center btn-dark bg-google flex items-center gap-2'>
                 <FaGoogle />
                 continue with google
               </button>

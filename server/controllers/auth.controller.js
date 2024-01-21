@@ -86,4 +86,25 @@ export const signIn=async (req,res,next)=>{
     } catch (error) {
         return res.status(404).json(error)
     }
+};
+
+export const google=async (req,res)=>{
+    try {
+        const user=await User.findOne({"personal_info.email" : req.body.email})
+        if (user) {
+            res.status(200).json(formDataToSend(user));
+        } else {
+            const generatedPassword=Math.random().toString(36).slice(-8)+Math.random().toString(36).slice(-8);
+            const hashedPassword=bcryptjs.hashSync(generatedPassword,10);
+            let username=req.body.email.split("@")[0];
+            const newUser=new User({personal_info:{fullname:req.body.fullname,email:req.body.email,password:hashedPassword,username : username}})
+            await newUser.save();
+            res.status(201).json(formDataToSend(newUser));
+        }
+    } catch (error) {
+        return res.status(500).json({
+            success:false,
+            error:"could not able to sign in with google try another one"
+        })
+    }
 }
