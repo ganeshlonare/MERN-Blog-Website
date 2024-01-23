@@ -1,17 +1,20 @@
 import React, { useContext } from 'react'
 import AnimationWrapper from '../common/Page-animation'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaFile } from 'react-icons/fa'
 import { UserContext } from '../App'
 import { removeFromSession } from '../common/Session'
 
 export default function UserNavigationPanel() {
 
+    const navigate=useNavigate();
+
     const {userAuth : {username} , setUserAuth} =useContext(UserContext);
 
     const signOutUser=()=>{
         removeFromSession("user");
         setUserAuth({access_token : null});
+        navigate("/sign-in")
     }
 
   return (
