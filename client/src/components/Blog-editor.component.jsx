@@ -2,12 +2,17 @@ import { Link } from 'react-router-dom'
 import logo from '../imgs/logo.png'
 import AnimationWrapper from '../common/Page-animation'
 import defaultBanner from '../imgs/blog banner.png'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import {getDownloadURL, getStorage, ref, uploadBytesResumable} from 'firebase/storage'
 import { app } from '../common/Firebase'
 import {Toaster , toast } from 'react-hot-toast'
+import { EditorContext } from '../pages/Editor.pages'
+import Editorjs from '@editorjs/editorjs'
+import { tools } from './Tools.component'
 
 export default function BlogEditor() {
+
+    let { blog ,blog : {title , banner , content , tags , des} , setBlog} =useContext(EditorContext);
 
     const [file , setfile]=useState(undefined);
     const [fileper,setFilePerc]=useState(0);
@@ -43,9 +48,11 @@ export default function BlogEditor() {
         setFormData({...formData,profile_img:downloadURL});
             toast.success("Image uploaded successfully 👍");
             toast.dismiss(loadingToast);
+            setBlog({...blog , banner : downloadURL})
       })  
     })
     }
+
 
     const handleTittleKeyDown=(e)=>{
         if(e.keyCode==13) {
@@ -57,7 +64,18 @@ export default function BlogEditor() {
         let input=e.target;
         input.style.height="auto";
         input.style.height=input.scrollHeight + "px";
+
+        setBlog({...blog , title : input.value})
     }
+
+    useEffect(()=>{
+        let editor = new Editorjs({
+            holderId : "textEditor",
+            data : '',
+            tools : tools,
+            placeholder: "lets write an awesome story"
+        })
+    },[])
     
   return (
     <>
@@ -66,7 +84,7 @@ export default function BlogEditor() {
             <img src={logo} alt="Logo" />
         </Link>
         <p className='max-md:hidden text-black line-clamp-1 w-full '>
-            New Blog
+            {title.length ? title : "New blog"}
         </p>
         <div className="flex gap-4 ml-auto">
             <button className='btn-dark py-2'>
@@ -85,7 +103,7 @@ export default function BlogEditor() {
 
                 <div className="relative aspect-video bg-white border-4 border-grey hover:opacity-80">
                     <label htmlFor='uploadBanner'>
-                        <img src={formData.profile_img || defaultBanner} 
+                        <img src={banner || defaultBanner} 
                         className='z-20'
                         alt="defaultBanner" />
                         <input
@@ -103,9 +121,13 @@ export default function BlogEditor() {
                 onKeyDown={handleTittleKeyDown}
                 onChange={handleTittleChange}
                  >
-
                  </textarea>
 
+                 <hr className='w-full opacity-20 my-5' />
+
+                 <div id='textEditor' className="font-gelasio">
+
+                 </div>
             </div>
         </section>
     </AnimationWrapper>
