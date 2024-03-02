@@ -9,10 +9,11 @@ import {Toaster , toast } from 'react-hot-toast'
 import { EditorContext } from '../pages/Editor.pages'
 import Editorjs from '@editorjs/editorjs'
 import { tools } from './Tools.component'
+import { text } from 'figlet'
 
 export default function BlogEditor() {
 
-    let { blog ,blog : {title , banner , content , tags , des} , setBlog} =useContext(EditorContext);
+    let { blog ,blog : {title , banner , content , tags , des} , setBlog , textEditor ,setTextEditor , setEditorState} =useContext(EditorContext);
 
     const [file , setfile]=useState(undefined);
     const [fileper,setFilePerc]=useState(0);
@@ -69,13 +70,38 @@ export default function BlogEditor() {
     }
 
     useEffect(()=>{
-        let editor = new Editorjs({
+        setTextEditor(new Editorjs({
             holderId : "textEditor",
             data : '',
             tools : tools,
             placeholder: "lets write an awesome story"
-        })
+        }))
     },[])
+
+    const handlePublishEvent=()=>{
+        if(!banner.length){
+            return toast.error("Upload a Banner image to publish it");
+        }
+        if(!title.length){
+            return toast.error("Write Blog title to publish it");
+        }
+
+        if(textEditor.isReady){
+            textEditor.save().then(data=>{
+                if(data.blocks.length){
+                    setBlog({...blog , content:data});
+                    setEditorState("publish");
+                }else{
+                    return toast.error("Write something in your blog to publish it");
+                }
+            })
+            .catch((err)=>{
+                console.log(err);
+            })
+        }
+    }
+
+        
     
   return (
     <>
@@ -87,7 +113,9 @@ export default function BlogEditor() {
             {title.length ? title : "New blog"}
         </p>
         <div className="flex gap-4 ml-auto">
-            <button className='btn-dark py-2'>
+            <button
+            onClick={handlePublishEvent}
+            className='btn-dark py-2'>
                 Publish
             </button>
 
