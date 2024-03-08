@@ -129,3 +129,7 @@
 .bg-google{
     background-color: #b80d0d;
 }
+
+body::-webkit-scrollbar {
+    display: none;
+  }

@@ -4,6 +4,8 @@ import {Toaster ,toast} from 'react-hot-toast'
 import { AiOutlineClose } from "react-icons/ai";
 import { EditorContext } from '../pages/Editor.pages';
 import Tags from './Tags.component';
+import logo from '../imgs/logo.png'
+import { Link } from 'react-router-dom';
 
 
 export default function PublishForm() {
@@ -46,14 +48,19 @@ export default function PublishForm() {
 
   return (
     <AnimationWrapper>
+
+     <Link to='/'>
+        <img src={logo} alt="logo" className='absolute w-10 h-10 ml-24 mt-6' />
+     </Link>
       <section className='w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4'>
+        
         <Toaster/>
 
         <button 
-        className='w-14 h-14 absolute right-[5vh] z-0 top-[7%] lg:top-[10%]'
+        className='w-14 h-14 lg:w-16 lg:h-[20px] absolute right-[5vh] z-0 top-[7%] lg:top-[10%]'
         onClick={handleCloseEvent}
         >
-          <AiOutlineClose/>
+          <AiOutlineClose className='lg:w-full lg:h-full'/>
         
         </button>
 

@@ -71,7 +71,7 @@ export default function BlogEditor() {
 
     useEffect(()=>{
         setTextEditor(new Editorjs({
-            holderId : "textEditor",
+            holder : "textEditor",
             data : content,
             tools : tools,
             placeholder: "lets write an awesome story"
