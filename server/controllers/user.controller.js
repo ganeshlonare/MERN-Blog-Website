@@ -33,7 +33,7 @@ export const createBlog=(req,res,next)=>{
     blog.save().then(blog=>{
         let incrementVal=draft ? 0 : 1;
 
-        User.findOneAndUpdate({_id:authorId} , {$inc :{"account_info.total_posts":incrementVal} , $push:{"blogs":blog_id}})
+        User.findOneAndUpdate({_id:authorId} , {$inc :{"account_info.total_posts":incrementVal} , $push:{"blog":blog_id}})
         .then(user=>{
             return res.status(200).json({id:blog.blog_id})
         })

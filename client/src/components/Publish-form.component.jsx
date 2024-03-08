@@ -5,7 +5,9 @@ import { AiOutlineClose } from "react-icons/ai";
 import { EditorContext } from '../pages/Editor.pages';
 import Tags from './Tags.component';
 import logo from '../imgs/logo.png'
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { UserContext } from '../App';
 
 
 export default function PublishForm() {
@@ -13,7 +15,11 @@ export default function PublishForm() {
   let characterLimit=200;
   let tagLimit=10;
 
-  let {blog ,blog:{banner , title ,tags , des} ,setEditorState , setBlog} = useContext(EditorContext);
+  const navigate=useNavigate();
+
+  let {userAuth:{access_token}}=useContext(UserContext)
+
+  let {blog ,blog:{banner , title ,tags , des , content} ,setEditorState , setBlog} = useContext(EditorContext);
 
   const handleCloseEvent=()=>{
     setEditorState('editor');
@@ -46,6 +52,54 @@ export default function PublishForm() {
     }
   }
 
+  const publishBlog=(e)=>{
+
+    if(e.target.className.includes('disable')){
+      return;
+    }
+
+    if(!title.length){
+      return toast.error("Title taak re ");
+    }
+
+    if(!des.length || des.length >characterLimit){
+      return toast.error("des niit taak re 200 peksha kami taak");
+    }
+
+    if(!tags.length){
+      return toast.error("tags pn taak re");
+    }
+
+    let loadingToast=toast.loading("Publishing...");
+
+    e.target.classList.add('disable');
+
+    let blogObj={
+      title,des,tags,content,banner 
+    }
+
+    axios.post("/api/user/create-blog" , blogObj , 
+    {
+      headers :{
+        'Authorization':`Bearer ${access_token}`
+      }
+    })
+    .then(()=>{
+      e.target.classList.remove('disable');
+      toast.dismiss(loadingToast);
+      toast.success("Published");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 500);
+    })
+    .catch(({response})=>{
+      e.target.classList.add('disable');
+      toast.dismiss(loadingToast);
+
+      return toast.error(response.data.error)
+    })
+  }
   return (
     <AnimationWrapper>
 
