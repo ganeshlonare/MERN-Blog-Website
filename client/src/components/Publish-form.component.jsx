@@ -9,6 +9,7 @@ import Tags from './Tags.component';
 export default function PublishForm() {
 
   let characterLimit=200;
+  let tagLimit=10;
 
   let {blog ,blog:{banner , title ,tags , des} ,setEditorState , setBlog} = useContext(EditorContext);
 
@@ -24,6 +25,23 @@ export default function PublishForm() {
   const handleBlogDesChange=(e)=>{
     let input=e.target;
     setBlog({...blog , des:input.value});
+  }
+  
+  const handleKeyDown=(e)=>{
+    if(e.keyCode==188 || e.keyCode==13){
+      e.preventDefault();
+
+      let tag=e.target.value;
+
+      if(tags.length < tagLimit){
+        if(!tags.includes(tag) && tag.length){
+          setBlog({...blog , tags:[...tags , tag]})
+        }
+      }else{
+        toast.error("You can only add up to "+tagLimit+" tags");
+      }
+      e.target.value="";
+    }
   }
 
   return (
@@ -87,10 +105,25 @@ export default function PublishForm() {
             <input
             className='sticky input-box bg-white left-0 top-0 pl-4 mb-3 focus:bg-white' 
             type="text" 
-            placeholder='Topics'/>
-            <Tags tag='' />
+            placeholder='Topics'
+            onKeyDown={handleKeyDown}
+            />
+
+            {
+              tags.map((tag , i)=>{
+                return <Tags tag={tag} tagIndex={i} key={i} />
+              })
+            }
+
           </div>
-          
+
+          <p className='mt-1 text-dark-grey text-sm text-right'>
+            {tagLimit-tags.length} tags left 
+          </p>
+        
+        <button className='btn-dark px-8'>
+          Publish
+        </button>
         </div>
 
       </section>
