@@ -50,7 +50,7 @@ export default function PublishForm() {
     <AnimationWrapper>
 
      <Link to='/'>
-        <img src={logo} alt="logo" className='absolute w-10 h-10 ml-24 mt-6' />
+        <img src={logo} alt="logo" className='hidden absolute w-10 h-10 ml-24 mt-6' />
      </Link>
       <section className='w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4'>
         
@@ -128,7 +128,9 @@ export default function PublishForm() {
             {tagLimit-tags.length} tags left 
           </p>
         
-        <button className='btn-dark px-8'>
+        <button 
+        onClick={publishBlog}
+        className='btn-dark px-8'>
           Publish
         </button>
         </div>
