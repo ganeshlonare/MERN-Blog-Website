@@ -11,7 +11,10 @@ export default function HomePage() {
 
             <div className="w-full">
 
-                <InPageNavigation />
+                <InPageNavigation routes={["Home" , "Trending Blogs"]} defaultHidden={["Trending Blogs"]}>
+                  <h1>Latest BLogs Here</h1>
+                  <h1>Trending BLogs Here</h1>
+                </InPageNavigation>
 
             </div>
 
