@@ -1,6 +1,7 @@
 import Blog from "../Schema/Blog.js"
 import { errorHandler } from "../utils/customError.js";
 
+//latest blogs
 export const latestBlogs = (req,res , next)=>{
     const maxLimit =5;
     try {
@@ -21,6 +22,7 @@ export const latestBlogs = (req,res , next)=>{
     }
 }
 
+//trending blogs
 export const trendingBlogs=async(req,res,next)=>{
     const maxLimit=5
     try {
@@ -36,6 +38,33 @@ export const trendingBlogs=async(req,res,next)=>{
         })
     } catch (error) {
         console.log("Error getting trending blogs")
+        console.log(error.message)
+        next(errorHandler(500,error.message))
+    }
+}
+
+//search blogs
+export const searchBlogs=async (req,res,next)=>{
+    const {tag}=req.body
+    console.log(tag)
+    try {
+        const findQuery={
+            tags:tag,
+            draft:false
+        }
+    
+        const blog=await Blog.find(findQuery)
+            .populate("author" , "personal_info.profile_img personal_info.username personal_info.fullname -_id")
+            .sort({"publishedAt":-1})
+            .select("blog_id title des banner activity tags publishedAt -_id")
+            .limit(5)
+            .then(blogs=>{
+                return res.status(200).json({blogs})
+            }).catch(err=>{
+            return res.status(500).json({error:err.message})
+            })
+    } catch (error) {
+        console.log("Error getting blogs")
         console.log(error.message)
         next(errorHandler(500,error.message))
     }
