@@ -1,7 +1,9 @@
 import { nanoid } from "nanoid";
 import Blog from "../Schema/Blog.js";
 import User from "../Schema/User.js";
+import { errorHandler } from "../utils/customError.js";
 
+//create blog
 export const createBlog=(req,res,next)=>{
     const authorId=req.user;
 
@@ -49,4 +51,25 @@ export const createBlog=(req,res,next)=>{
         console.log(err)
         return res.status(500).json({error:err.message||'Internal server error'})
     })
+}
+
+//Search User
+export const searchUser=async (req,res,next)=>{
+    try {
+        const {query} = req.body
+
+        const users =await User.find({"personal_info.username" : new RegExp(query , 'i')})
+        .select("personal_info.fullname personal_info.profile_img personal_info.username -_id")
+        .limit(50)
+        .then((user)=>{
+            return res.status(200).json({user})
+        })
+        .catch((err)=>{
+            res.status(404).json({error:err.message})
+        })
+    } catch (error) {
+        console.log("error in searching user")
+        console.log(error.message)
+        return next(errorHandler(500,"Error in searching user"))
+    }
 }

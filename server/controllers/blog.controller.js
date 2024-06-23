@@ -45,19 +45,28 @@ export const trendingBlogs=async(req,res,next)=>{
 
 //search blogs
 export const searchBlogs=async (req,res,next)=>{
-    const {tag}=req.body
+    const {tag , query , page}=req.body
     console.log(tag)
     try {
-        const findQuery={
-            tags:tag,
-            draft:false
+        let findQuery;
+        if(tag){
+            findQuery={
+                tags:tag,
+                draft:false
+            }
+        }else if(query){
+            findQuery={
+                draft:false,
+                title:new RegExp(query , 'i')
+            }
         }
     
         const blog=await Blog.find(findQuery)
             .populate("author" , "personal_info.profile_img personal_info.username personal_info.fullname -_id")
             .sort({"publishedAt":-1})
             .select("blog_id title des banner activity tags publishedAt -_id")
-            .limit(5)
+            .skip((page-1)*2)
+            .limit(2)
             .then(blogs=>{
                 return res.status(200).json({blogs})
             }).catch(err=>{
