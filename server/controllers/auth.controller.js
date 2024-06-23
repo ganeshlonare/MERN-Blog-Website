@@ -17,6 +17,7 @@ const formDataToSend=(user)=>{
 
 export const signUp=async (req,res)=>{
     const {fullname , email , password}=req.body;
+    
     const hashPassword=bcryptjs.hashSync(password , 10);
 
     if(fullname.length<3) {

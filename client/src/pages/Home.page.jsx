@@ -13,15 +13,13 @@ export default function HomePage() {
     axios.get(`/api/blog/latest-blogs`)
     .then(({data})=>{
       setBlogs(data.blogs)
-      console.log(data.blogs)
+      console.log(data.blogs[0])
     })
   }
 
   useEffect(()=>{
     fetchLatestBlog()
   },[])
-  
-
 
 
   return (

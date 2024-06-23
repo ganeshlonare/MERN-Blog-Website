@@ -19,6 +19,7 @@
     "@editorjs/marker": "^1.4.0",
     "@editorjs/quote": "^2.6.0",
     "axios": "^1.6.5",
+    "caniuse-lite": "^1.0.30001636",
     "fetch": "^1.1.0",
     "firebase": "^10.7.2",
     "framer-motion": "^10.17.5",
