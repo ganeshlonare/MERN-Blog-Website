@@ -8,6 +8,8 @@ import cors from 'cors'
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import errorMiddleware from "./middlewares/errorMiddleware.js";
+import cloudinary from 'cloudinary'
+
 
 const app=express();
 let PORT=process.env.PORT || 8080;
@@ -24,6 +26,12 @@ main()
 
 app.listen(PORT,()=>{
     console.log(`Server is working on port ${PORT}`);
+})
+
+cloudinary.v2.config({
+    cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:process.env.CLOUDINARY_API_KEY,
+    api_secret:process.env.CLOUDINARY_API_SECRET_KEY,
 })
 
 //middlewares

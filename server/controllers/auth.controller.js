@@ -1,94 +1,160 @@
 import User from "../Schema/User.js";
 import bcryptjs from 'bcryptjs';
-import jwt  from "jsonwebtoken";
+import cloudinary from 'cloudinary'
+import fs from 'fs/promises'
 
-let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
-let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
-
-const formDataToSend=(user)=>{
-    const access_token=jwt.sign({id:user._id},process.env.JWT_SECRET_KEY);
-    return {
-        access_token,
-        profile_img:user.personal_info.profile_img,
-        fullname:user.personal_info.fullname,
-        username:user.personal_info.username
-    }
+const cookieOptions={
+    httpOnly:true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,//7 days
+    secure:true,
 }
 
-export const signUp=async (req,res)=>{
-    const {fullname , email , password}=req.body;
-    
-    const hashPassword=bcryptjs.hashSync(password , 10);
-
-    if(fullname.length<3) {
-        return res.status(403).json({
-            success:false,
-            error:"fullname must be more than 3 characters"
-        })
-    }
-
-    if(!email.length) {
-        return res.status(403).json({
-            error:"Enter your email"
-        })
-    }
-
-    if(!emailRegex.test(email)) {
-        return res.status(403).json({
-            error:"Email is invalid"
-        })
-    }
-
-    if(!passwordRegex.test(password)){
-        return res.status(403).json({
-            error:"Password should be 6 to 20 characters long with a Numeric , 1 lowercase and 1 uppercase letter"
-        })
-    }
-
-    let username=email.split("@")[0];
-
-    const newUser=new User({
-        personal_info:{fullname , email , password:hashPassword,username}
-    })
+//sign up
+export const signUp=async(req,res,next)=>{
     try {
-       await newUser.save();
-       res.status(201).json(formDataToSend(newUser));
-    } catch (error) {
-        if(error.code == 11000) {
-            return res.status(500).json({
+        const {fullname , email , password} = req.body
+        
+        if(!fullname || !email || !password){
+            return res.status(401).json({
                 success:false,
-                error:"Email is already exists!"
+                message:"All the fields are required"
             })
         }
-       return res.status(404).json(error.message);
+
+        const userExist=await User.findOne({"personal_info.email" :email})
+
+        if(userExist){
+            return res.status(401).json({
+                success:false,
+                message:"User already exist"
+            })
+        }
+
+        const hashedPassword=await bcryptjs.hash(password,12)
+
+        const user=await User.create({
+            personal_info:{
+                fullname,
+                email,
+                password:hashedPassword,
+                username:email.split('@')[0],
+                avatar:{
+                    public_id:email,
+                    secure_url:"https://static.vecteezy.com/system/resources/previews/002/318/271/non_2x/user-profile-icon-free-vector.jpg"
+                },
+            }
+        })
+
+        if(!user){
+            return res.status(401).json({
+                success:false,
+                message:"error creating user"
+            })
+        }
+
+        if(req.file){
+            try {
+                const result = await cloudinary.v2.uploader.upload(req.file.path,{
+                    folder:'blogs',
+                    hight:250,
+                    width:250,
+                    gravity:'faces',
+                    crop:'fill'
+                })
+
+                if(result){
+                    user.personal_info.avatar.public_id=result.public_id
+                    user.personal_info.avatar.secure_url=result.secure_url
+                    fs.rm(`uploads/${req.file.filename}`)
+                }
+            } catch (error) {
+                console.log("error in uploading file")
+                console.log(error.message)
+                return res.status(401).json({
+                    success:false,
+                    message:"error uploading file"
+                })
+            }
+        }
+
+        await user.save()
+        const token=await user.generateJwtToken()
+        if(!token){
+            return res.status(401).json({
+                success:false,
+                message:"error creating token"
+            })
+        }
+        res.cookie('token' , token , cookieOptions)
+
+        return res.status(201).json({
+            success:true,
+            message:"User created successfully",
+            user
+        })        
+    } catch (error) {
+        console.log("Error in sign up")
+        console.log(error.message)
+        return res.status(401).json({
+            success:false,
+            message:error.message
+        })
     }
 }
 
-
+//sign in
 export const signIn=async (req,res,next)=>{
-    const {email,password}=req.body;
-    try {        
-    const validUser=await User.findOne({"personal_info.email" : email})
-    if(!validUser) return res.status(404).json(
-        {
-            success:false,
-            error:"User not found"
+    const {email , password} = req.body
+    try {
+        if(!email || !password){
+            return res.status(401).json({
+                success:false,
+                message:"All the fields are required"
+            })
         }
-        );
 
-    const validPassword=bcryptjs.compareSync(password,validUser.personal_info.password);
-    if(!validPassword) return res.status(404).json({
-        success:false,
-        error:"Invalid password"
-    });
+        const user= await User.findOne({"personal_info.email":email})
+        if(!user){
+            return res.status(404).json({
+                success:false,
+                message:"User not found"
+            })
+        }
 
-    res.status(200).json(formDataToSend(validUser));
+        const isPasswordValid=await bcryptjs.compare(password , user.personal_info.password)
+        if(!isPasswordValid){
+            return res.status(401).json({
+                success:false,
+                message:"Invalid credentials , please try again with another one"
+            })
+        }
 
+        const token=await user.generateJwtToken()
+        if(!token){
+            return res.status(401).json({
+                success:false,
+                message:"error creating token"
+            })
+        }
+        res.cookie('token' , token , cookieOptions)
+
+        return res.status(200).json({
+            success:true,
+            message:"User logged in successfully",
+            user
+        })
+        
     } catch (error) {
-        return res.status(404).json(error)
+        console.log("error in sign up")
+        console.log(error.message)
+        return res.json(500).json({
+            success:false,
+            message:error.message
+        })
     }
 };
 
+//google
 export const google=async (req,res)=>{
     try {
         const user=await User.findOne({"personal_info.email" : req.body.email})
@@ -109,3 +175,5 @@ export const google=async (req,res)=>{
         })
     }
 }
+
+//logout
