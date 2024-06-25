@@ -177,3 +177,36 @@ export const google=async (req,res)=>{
 }
 
 //logout
+export const logout=async(req,res)=>{
+    try {
+        const cookie=req.cookies.token
+        if (!cookie) {
+            return res.status(401).json({
+                success:false,
+                message:"you are not logged in"
+            })
+        }
+
+        res.clearCookie('token' , { httpOnly: true, secure: true, sameSite: 'strict' })
+
+        return res.status(200).json({
+            success:true,
+            message:"logged out successfully"
+        })
+    } catch (error) {
+        console.log("error in logging out")
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//forgot password
+
+
+//reset password
+
+
+//change password

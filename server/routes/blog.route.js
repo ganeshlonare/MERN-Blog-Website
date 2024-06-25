@@ -1,5 +1,5 @@
 import express from 'express'
-import { latestBlogs, searchBlogs, trendingBlogs } from '../controllers/blog.controller.js'
+import {  latestBlogs, searchBlogs, trendingBlogs } from '../controllers/blog.controller.js'
 
 const router = express.Router();
 

@@ -26,7 +26,7 @@ export const latestBlogs = (req,res , next)=>{
 export const trendingBlogs=async(req,res,next)=>{
     const maxLimit=5
     try {
-        const blogs=await Blog.find({draft:false})
+        Blog.find({draft:false})
         .populate("author" , "personal_info.profile_img personal_info.username personal_info.fullname -_id")
         .sort({"activity.total_reads" : -1 , "activity.likes":-1 , "publishedAt":-1})
         .select("blog_id title publishedAt -_id")
