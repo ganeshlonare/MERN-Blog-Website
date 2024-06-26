@@ -40,7 +40,7 @@ export const getProfile=async (req,res)=>{
 export const createBlog=(req,res,next)=>{
     const authorId=req.user.id;
 
-    let {title , des , banner , tags , content , draft}=req.body;
+    let {title , des , banner , tags , content , draft , id}=req.body;
 
     if(!title){
         return res.status(403).json({error:"You must provide a title"});
@@ -63,9 +63,24 @@ export const createBlog=(req,res,next)=>{
 
     tags=tags.map(tag=>tag.toLowerCase());
 
-    let blog_id=title.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, "-").trim() + nanoid();
+    let blog_id=id||title.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, "-").trim() + nanoid();
 
-    let blog=new Blog({
+    if(id){
+        Blog.findOneAndUpdate({blog_id},{title,des,banner,tags,content ,draft:draft?draft:false})
+        .then(()=>{
+            return res.status(200).json({
+                success:true,
+                message:"Blog updated successfully",
+                id:blog_id
+            });
+        }).catch((err)=>{
+            console.log(err.message);
+            return res.status(500).json({
+                success:false,
+                message:err.message
+            })
+        })
+    }else{let blog=new Blog({
         title,
         des,
         banner,
@@ -91,6 +106,7 @@ export const createBlog=(req,res,next)=>{
         console.log(err)
         return res.status(500).json({error:err.message||'Internal server error'})
     })
+}
 }
 
 //Search User
