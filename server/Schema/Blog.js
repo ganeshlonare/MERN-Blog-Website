@@ -36,7 +36,6 @@ const blogSchema = mongoose.Schema({
         total_likes: {
             type: Number,
             default: 0,
-            minLength: [0, "likes must be greater than or equal to 0"]
         },
         total_comments: {
             type: Number,
