@@ -4,6 +4,7 @@ import 'dotenv/config';
 import authRouter from './routes/auth.route.js'
 import userRouter from './routes/user.route.js'
 import blogRouter from './routes/blog.route.js'
+import commentRouter from './routes/comment.route.js'
 import cors from 'cors'
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -48,6 +49,7 @@ app.use(cookieParser())
 app.use("/api/auth" , authRouter)
 app.use("/api/user" , userRouter)
 app.use("/api/blog" , blogRouter)
+app.use('/api/comment',commentRouter)
 
 app.use(errorMiddleware)
 
