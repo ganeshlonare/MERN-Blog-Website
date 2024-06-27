@@ -17,7 +17,7 @@ export const deleteCommentById=(_id)=>{
             Notification.findOneAndDelete({comment:_id}).then(()=>{
                 console.log("notification deleted successfully")
             })
-            Notification.findOneAndDelete({reply:_id}).then(()=>{
+            Notification.findOneAndUpdate({reply:_id} ,{$unset:{reply:1}}).then(()=>{
                 console.log("notification deleted successfully")
             })
 

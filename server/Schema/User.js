@@ -5,7 +5,6 @@ let profile_imgs_name_list = ["Garfield", "Tinkerbell", "Annie", "Loki", "Cleo",
 let profile_imgs_collections_list = ["notionists-neutral", "adventurer-neutral", "fun-emoji"];
 
 const userSchema = mongoose.Schema({
-
     personal_info: {
         fullname: {
             type: String,

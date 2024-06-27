@@ -1,8 +1,6 @@
 import Blog from "../Schema/Blog.js"
-import Comment from "../Schema/Comment.js";
 import Notification from "../Schema/Notification.js";
 import { errorHandler } from "../utils/customError.js";
-import { deleteCommentById } from "../utils/deleteCommentById.js";
 
 //latest blogs
 export const latestBlogs = (req,res , next)=>{

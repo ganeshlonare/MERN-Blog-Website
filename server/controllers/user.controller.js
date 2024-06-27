@@ -5,6 +5,8 @@ import bcryptjs from 'bcryptjs'
 import cloudinary from 'cloudinary'
 import fs from 'fs/promises'
 import { URL } from "url";
+import Notification from "../Schema/Notification.js";
+import Comment from "../Schema/Comment.js";
 
 //get-profile
 export const getProfile=async (req,res)=>{
@@ -324,4 +326,265 @@ export const updateUser=async(req,res,next)=>{
         })
 
     })
+}
+
+//update user blog
+export const updateBlog=async(req,res)=>{
+    const {blog_id}=req.body
+    try {
+        const blog=await Blog.findOneAndUpdate({blog_id},{$set:req.body},{runValidators:true})
+        blog.save()
+        return res.status(200).json({
+            success:true,
+            message:"Blog updated successfully",
+            blog
+        })
+    } catch (error) {
+        console.log('error in updating blog')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//new notifications
+export const newNotifications=async(req,res)=>{
+    const {id} = req.user
+    try {
+        await Notification.exists({notification_for:id , seen:false , user:{$ne:id}})
+        .then((notifications)=>{
+            if(notifications){
+            return res.status(200).json({
+                success:true,
+                message:"New notifications available",
+                new_notification_available:true
+            })
+        }else{
+            return res.status(200).json({
+                success:true,
+                message:"No notifications found",
+                new_notification_available:false
+            })
+        }
+        }).catch((error)=>{
+            console.log('error in getting notifications')
+            console.log(error.message)
+        })
+    } catch (error) {
+        console.log('error in getting users notifications')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//notifications
+export const notifications=async(req,res)=>{
+    const {id}=req.user
+    const {page , filter , deletedDocCount}=req.body
+    try {
+        let findQuery={
+            notification_for:id,
+            seen:false,
+            user:{$ne:id}
+        }
+
+        if(filter!=='all'){
+            findQuery.type=filter
+        }
+        const maxLimit=10
+        const skip=(page-1)*maxLimit
+        if(deletedDocCount){
+            skip-=deletedDocCount
+        }
+        Notification.find({findQuery})
+        .skip(skip)
+        .limit(maxLimit)
+        .sort({createdAt:-1})
+        .select("createdAt seen reply type")
+        .populate("blog","title blog_id")
+        .populate("user","personal_info.username personal_info.fullname personal_info.avatar.secure_url")
+        .populate("comment","comment")
+        .populate("reply","comment")
+        .populate("replied_on_comment","comment")
+        .then((notifications)=>{
+            Notification.updateMany(findQuery,{seen:true})
+            .skip(skip)
+            .limit(maxLimit)
+            .then(()=>{console.log('Notifications seen')})
+            return res.status(200).json({
+                success:true,
+                message:"Notifications fetched successfully",
+                notifications
+            })
+        }).catch((error)=>{
+            console.log('error in getting notifications')
+            console.log(error.message)
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log('error in getting notifications')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//notification count
+export const notificationsCount=async(req,res)=>{
+    const {id}=req.user
+    const {filter}=req.body
+    try {
+        let findQuery={
+            notification_for:id,
+            user:{$ne:id}
+        }
+        if(filter!=='all'){
+            findQuery.type=filter
+        }
+        Notification.countDocuments(findQuery)
+        .then((result)=>{
+            return res.status(200).json({
+                success:true,
+                message:"Notification count fetched successfully",
+                totalDocs:result
+            })
+        }).catch( (error)=> {
+            console.log("error in counting notifications")
+            console.log(error.message)
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log("error in counting notifications")
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//get user blogs
+export const getUserBlogs=(req,res)=>{  
+    const {id}=req.user
+    const {page , draft , deletedDocCount , query} = req.body
+    try {
+        const maxLimit=5
+        let skip=(page-1)*maxLimit
+        if(deletedDocCount){
+            skip-=deletedDocCount
+        }
+        Blog.find({author:id , draft , title:new RegExp(query, 'i') })
+        .skip(skip)
+        .limit(maxLimit)
+        .select("title banner des publishedAt draft blog_id activity -_id")
+        .sort({"publishedAt":-1})
+        .then((blogs)=>{
+            return res.status(200).json({
+                success:true,
+                message:"Blogs fetched successfully",
+                blogs:blogs
+            })
+        }).catch((error)=>{
+            console.log('error in getting users blogs')
+            console.log(error.message)
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log('error in getting users blogs')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//get user blogs count
+export const getUserBlogsCount=(req,res)=>{
+    const {id}=req.user
+    const {draft , query}=req.body
+    try {
+        Blog.countDocuments({draft , author:id , title:new RegExp(query , 'i')})
+        .then((count)=>{
+            return res.status(200).json({
+                success:true,
+                message:"Blogs count fetched successfully",
+                totalDocs:count
+            })
+        })
+    } catch (error) {
+        console.log('error in getting users blogs')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
+
+//delete blog
+export const deleteBlog=async (req,res)=>{
+    const {id}=req.user
+    const {blog_id} =req.body
+    console.log(blog_id)
+    try {
+        await Blog.findOneAndDelete({blog_id})
+        .then((blog)=>{
+            Notification.deleteMany({blog:blog._id}).then((result)=>{
+                return res.status(200).json({
+                    success:true,
+                    message:"notifications deleted"
+                })
+            })
+            Comment.deleteMany({blog_id:blog._id}).then(()=>{
+                return res.status(200).json({
+                    success:true,
+                    message:"comments successfully"
+                })
+            })
+            User.findByIdAndDelete(is,{
+                $pull:{blogs:blog._id},
+                $inc:{"account_info.total_posts":-1}
+            }).then(()=>{
+                return res.status(200).json({
+                    success:true,
+                    message:"blog deleted successfully"
+                })
+            })
+        return res.status(200).json({
+            success:true,
+            message:"blog deleted successfully"
+        })
+        }).catch((error)=>{
+            console.log('error in deleting blog')
+            console.log(error.message)
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log('error in deleting blog')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
 }
