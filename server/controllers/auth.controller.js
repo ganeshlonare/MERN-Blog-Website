@@ -30,7 +30,7 @@ export const signUp=async(req,res,next)=>{
             })
         }
 
-        const hashedPassword=await bcryptjs.hash(password,12)
+        const hashedPassword=await bcryptjs.hash(password,10)
 
         const user=await User.create({
             personal_info:{
@@ -203,10 +203,68 @@ export const logout=async(req,res)=>{
     }
 }
 
-//forgot password
-
-
-//reset password
-
-
 //change password
+export const changePassword=async (req,res)=>{
+    const {id}=req.user
+    const {currentPassword , newPassword} = req.body
+    try {
+        if(!currentPassword || !newPassword){
+            return res.status(400).json({
+                success:false,
+                message:"please fill all the fields"
+            })
+        }
+
+        await User.findById(id).then((user)=>{
+            if(user.google_auth){
+                return res.status(403).json({
+                    success:false,
+                    message:"you cant change your password because you logged in with google"
+                })
+            }
+            bcryptjs.compare(currentPassword , user.personal_info.password , (err , result)=>{
+                if(err){
+                    return res.status(500).json({
+                        success:false,
+                        message:err.message
+                    })
+                }
+                if(!result){
+                    return res.status(400).json({
+                        success:false,
+                        message:"old password is incorrect"
+                    })
+                }
+
+                bcryptjs.hash(newPassword , 10 , (err , hashedPassword)=>{
+                    if(err){
+                        return res.status(500).json({
+                            success:false,
+                            message:err.message
+                        })
+                    }
+                    user.personal_info.password=hashedPassword
+                    user.save()
+                    return res.status(200).json({
+                        success:true,
+                        message:"password changed successfully",
+                        user
+                    })
+                })
+            })
+        }).catch((error)=>{
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+        
+    } catch (error) {
+        console.log("error in changing password")
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}

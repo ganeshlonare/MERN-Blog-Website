@@ -2,6 +2,7 @@ import Blog from "../Schema/Blog.js"
 import Comment from "../Schema/Comment.js";
 import Notification from "../Schema/Notification.js";
 import { errorHandler } from "../utils/customError.js";
+import { deleteCommentById } from "../utils/deleteCommentById.js";
 
 //latest blogs
 export const latestBlogs = (req,res , next)=>{
@@ -392,7 +393,7 @@ export const getReplies=async (req,res)=>{
         Comment.findOne({_id})
         .populate({
             path:"children",
-            option:{
+            options:{
                 limit:maxLimit,
                 skip:skip,
                 sort:{'commentedAt':-1}
@@ -427,3 +428,39 @@ export const getReplies=async (req,res)=>{
     }
 }
 
+//delete comments
+export const deleteComment=async(req,res)=>{
+    const userId=req.user.id
+    const {_id}=req.body
+    try {
+        Comment.findOne({_id})
+        .then((commentData)=>{
+            if(commentData.commented_by==userId || commentData.blog_author==userId){
+                deleteCommentById(_id);
+                return res.status(200).json({
+                    success:true,
+                    message:"Comment deleted successfully"
+                })
+            }else{
+                return res.status(401).json({
+                    success:false,
+                    message:"You are not authorized to delete this comment"
+                })
+            }
+        }).catch((error)=>{
+            console.log("Error in deleting comment")
+            console.log(error.message)
+            return res.status(500).json({
+                success:false,
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log('error in deleting comment')
+        console.log(error.message)
+        return res.status(500).json({
+            success:false,
+            message:error.message
+        })
+    }
+}
