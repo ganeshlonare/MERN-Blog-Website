@@ -75,7 +75,12 @@ export const addComment=async(req,res,next)=>{
             message:"Comment cannot be empty"
         })
     }
-    let commentObj={blog_id:_id,blog_author,comment,commented_by:user_id}
+    let commentObj={blog_id:_id,
+        blog_author,
+        comment,
+        commented_by:user_id,
+        isReply:false
+    }
     //If we get the replying_to from the frontend where replying_to is the id of 
     //the comment we are replying to then we will add the reply to the comment
     if(replying_to){

@@ -1,6 +1,6 @@
 import express from 'express'
 import {isLikedByUser, latestBlogs, likeBlog, searchBlogs, trendingBlogs } from '../controllers/blog.controller.js'
-import { verifyToken } from '../utils/verifyJWT.js';
+import { verifyToken } from '../middlewares/verifyJWT.js';
 
 const router = express.Router();
 

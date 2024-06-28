@@ -5,6 +5,8 @@ import authRouter from './routes/auth.route.js'
 import userRouter from './routes/user.route.js'
 import blogRouter from './routes/blog.route.js'
 import commentRouter from './routes/comment.route.js'
+import userBlogRouter from './routes/userBlog.route.js'
+import notificationRoute from './routes/notification.route.js'
 import cors from 'cors'
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -50,6 +52,8 @@ app.use("/api/auth" , authRouter)
 app.use("/api/user" , userRouter)
 app.use("/api/blog" , blogRouter)
 app.use('/api/comment',commentRouter)
+app.use("/api/user-blog",userBlogRouter)
+app.use("/api/notification",notificationRoute)
 
 app.use(errorMiddleware)
 
